@@ -56,7 +56,7 @@ class CarController:
             steer_required = CC.hudControl.visualAlert == VisualAlert.steerRequired
             # TODO: find a way to silence audible warnings so we can add more hud alerts
             steer_required = steer_required and CS.lkas_allowed_speed
-            # 關閉所有HUD告警
+            # 關閉所有HUD告警  (測試OK)
             steer_required = False
             can_sends.append(mazdacan.create_alert_command(self.packer, CS.cam_laneinfo, ldw, steer_required))
 

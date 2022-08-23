@@ -33,10 +33,10 @@ class CarInterface(CarInterfaceBase):
         CarInterfaceBase.configure_torque_tune(candidate, ret.lateralTuning)
 
         if candidate in (CAR.CX5, CAR.CX5_2022):
-            ret.mass = 3450 * CV.LB_TO_KG + STD_CARGO_KG  # 預設3655, 18 CX-5 2.0 = 3450
+            ret.mass = 3450 * CV.LB_TO_KG + STD_CARGO_KG  # 車重 預設3655, 18 CX-5 2.0 = 3450
             ret.wheelbase = 2.7  # 軸距
             ret.steerRatio = 15.5 + 0.5  # 預15.5 轉向角度
-            # 增加pid參數 2022/08/23
+            # 增加pid參數 2022/08/23(未測試)
             ret.lateralTuning.pid.kiBP, ret.lateralTuning.pid.kpBP = [[0.], [0.]]
             ret.lateralTuning.pid.kpV, ret.lateralTuning.pid.kiV = [[0.19], [0.019]]
             ret.lateralTuning.pid.kf = 0.00006
