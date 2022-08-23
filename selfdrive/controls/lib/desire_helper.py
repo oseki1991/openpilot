@@ -6,7 +6,7 @@ LaneChangeState = log.LateralPlan.LaneChangeState
 LaneChangeDirection = log.LateralPlan.LaneChangeDirection
 
 LANE_CHANGE_SPEED_MIN = 30 * CV.MPH_TO_MS
-LANE_CHANGE_TIME_MAX = 10.
+LANE_CHANGE_TIME_MAX = 10. - 4.  # 設定變換車道過程的時間 預設10
 
 DESIRES = {
   LaneChangeDirection.none: {
