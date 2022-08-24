@@ -28,18 +28,22 @@ class CarInterface(CarInterfaceBase):
 
         ret.steerActuatorDelay = 0.1 + 0.1  # 預設0.1 轉向延遲補償
         ret.steerLimitTimer = 0.8 + 0.7  # 預設0.8 警告延遲時間
-        tire_stiffness_factor = 0.70  # not optimized yet
+        tire_stiffness_factor = 0.70  # not optimized yet 避震？輪胎？
 
         CarInterfaceBase.configure_torque_tune(candidate, ret.lateralTuning)
 
         if candidate in (CAR.CX5, CAR.CX5_2022):
+            ret.mass = 3655 * CV.LB_TO_KG + STD_CARGO_KG  # 車重 預設3655, 18 CX-5 2.0 = 3450
+            ret.wheelbase = 2.7  # 軸距
+            ret.steerRatio = 15.5  # 預設15.5 轉向角度
+        elif candidate in CAR.CX5_PID:  # 測試用
             ret.mass = 3450 * CV.LB_TO_KG + STD_CARGO_KG  # 車重 預設3655, 18 CX-5 2.0 = 3450
             ret.wheelbase = 2.7  # 軸距
-            ret.steerRatio = 15.5 + 0.5  # 預15.5 轉向角度
-            # 增加pid參數 2022/08/23(未測試)
-            ret.lateralTuning.pid.kiBP, ret.lateralTuning.pid.kpBP = [[0.], [0.]]
-            ret.lateralTuning.pid.kpV, ret.lateralTuning.pid.kiV = [[0.19], [0.019]]
-            ret.lateralTuning.pid.kf = 0.00006
+            ret.steerRatio = 15.5  # 預設15.5 轉向角度
+            # 增加pid參數 2022/08/23(測試Failed)
+            # ret.lateralTuning.pid.kiBP, ret.lateralTuning.pid.kpBP = [[0.], [0.]]
+            # ret.lateralTuning.pid.kpV, ret.lateralTuning.pid.kiV = [[0.19], [0.019]]
+            # ret.lateralTuning.pid.kf = 0.00006
         elif candidate in (CAR.CX9, CAR.CX9_2021):
             ret.mass = 4217 * CV.LB_TO_KG + STD_CARGO_KG
             ret.wheelbase = 3.1

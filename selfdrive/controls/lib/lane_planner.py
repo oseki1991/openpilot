@@ -13,7 +13,7 @@ TRAJECTORY_SIZE = 33
 # so a path offset is not needed
 PATH_OFFSET = 0.00
 if EON:
-    CAMERA_OFFSET = -0.06 - 0.1  # 鏡頭偏移m
+    CAMERA_OFFSET = -0.06 - 0.15  # 鏡頭偏移m
 elif TICI:
     CAMERA_OFFSET = 0.04
 else:
