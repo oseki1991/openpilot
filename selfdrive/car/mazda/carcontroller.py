@@ -6,8 +6,11 @@ from selfdrive.car.mazda.values import CarControllerParams, Buttons
 
 VisualAlert = car.CarControl.HUDControl.VisualAlert
 
+latState_tmp = 0
+
 
 class CarController:
+
     def __init__(self, dbc_name, CP, VM):
         self.CP = CP
         self.apply_steer_last = 0
@@ -17,7 +20,7 @@ class CarController:
 
     def update(self, CC, CS):
         can_sends = []
-
+        global latState_tmp
         apply_steer = 0
 
         if CC.latActive:
@@ -50,7 +53,7 @@ class CarController:
 
         # send HUD alerts  原車HUD告警
         if self.frame % 50 == 0:
-            # VisualAlert.steerRequired 方向盤接管
+            # VisualAlert.steerRequired 方向盤接管告警
             # VisualAlert.ldw 未知 車道偏移？
             ldw = CC.hudControl.visualAlert == VisualAlert.ldw
             steer_required = CC.hudControl.visualAlert == VisualAlert.steerRequired
@@ -59,6 +62,24 @@ class CarController:
             # 關閉所有HUD告警  (測試OK)
             steer_required = False
             can_sends.append(mazdacan.create_alert_command(self.packer, CS.cam_laneinfo, ldw, steer_required))
+            """
+            # TODO: 0284 方向燈關閉車道維持 (未測試)
+            if CS.leftBlinker or CS.rightBlinker:  # 判斷方向燈狀態
+                # 全時車道維持 打方向燈關閉維持
+                if CC.latActive and latState_tmp == 0:
+                    latState_tmp = 1  # 暫存方向燈開啟前的車道維持狀態
+                    can_sends.append(
+                        mazdacan.create_button_cmd(self.packer, self.CP.carFingerprint, CS.crz_btns_counter,
+                                                   Buttons.CANCEL))
+             TODO: 0284 方向燈結束 恢復車道維持 (未測試)
+            else:
+                if latState_tmp == 1:
+                    # 恢復打方向燈之前的狀態
+                    latState_tmp = 0
+                    can_sends.append(
+                        mazdacan.create_button_cmd(self.packer, self.CP.carFingerprint, CS.crz_btns_counter,
+                                                   Buttons.RESUME))
+            """
 
         # send steering command
         can_sends.append(mazdacan.create_steering_control(self.packer, self.CP.carFingerprint,

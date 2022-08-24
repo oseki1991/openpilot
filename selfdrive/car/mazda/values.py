@@ -12,8 +12,8 @@ Ecu = car.CarParams.Ecu
 # Steer torque limits
 
 class CarControllerParams:
-    STEER_MAX = 800              # theoretical max_steer 2047 方向盤的最大扭力值
-    STEER_DELTA_UP = 10          # torque increase per refresh 此值是設定當車輛進入彎道後，每次傳送扭力值給車輛的間隔時間。因此此值越大，方向盤轉動速度就越快。
+    STEER_MAX = 800 + 200        # theoretical max_steer 2047 TODO:+200 方向盤的最大扭力值
+    STEER_DELTA_UP = 10          # torque increase per refresh TODO: 此值是設定當車輛進入彎道後，每次傳送扭力值給車輛的間隔時間。因此此值越大，方向盤轉動速度就越快。
     STEER_DELTA_DOWN = 25        # torque decrease per refresh 調整車輛脫離彎道時扭力值傳送的間隔時間
     STEER_DRIVER_ALLOWANCE = 15  # allowed driver torque before start limiting
     STEER_DRIVER_MULTIPLIER = 1  # weight driver torque
@@ -23,6 +23,7 @@ class CarControllerParams:
 
 class CAR:
     CX5 = "MAZDA CX-5"
+    CX5_PID = "MAZDA CX-5 PID"
     CX9 = "MAZDA CX-9"
     MAZDA3 = "MAZDA 3"
     MAZDA6 = "MAZDA 6"
@@ -38,6 +39,7 @@ class MazdaCarInfo(CarInfo):
 
 CAR_INFO: Dict[str, Union[MazdaCarInfo, List[MazdaCarInfo]]] = {
     CAR.CX5: MazdaCarInfo("Mazda CX-5 2017-21"),
+    CAR.CX5_PID: MazdaCarInfo("Mazda CX-5 2017-21"),
     CAR.CX9: MazdaCarInfo("Mazda CX-9 2016-20"),
     CAR.MAZDA3: MazdaCarInfo("Mazda 3 2017-18"),
     CAR.MAZDA6: MazdaCarInfo("Mazda 6 2017-20"),
@@ -85,6 +87,71 @@ FW_VERSIONS = {
         ],
     },
     CAR.CX5: {
+        (Ecu.eps, 0x730, None): [
+            b'KJ01-3210X-G-00\x00\x00\x00\x00\x00\x00\x00\x00\x00',
+            b'KJ01-3210X-J-00\x00\x00\x00\x00\x00\x00\x00\x00\x00',
+            b'KJ01-3210X-M-00\x00\x00\x00\x00\x00\x00\x00\x00\x00',
+            b'K319-3210X-A-00\x00\x00\x00\x00\x00\x00\x00\x00\x00',
+        ],
+        (Ecu.engine, 0x7e0, None): [
+            b'PA53-188K2-A\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00',
+            b'PYFA-188K2-J\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00',
+            b'PYFC-188K2-J\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00',
+            b'PYFD-188K2-J\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00',
+            b'PYNF-188K2-F\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00',
+            b'PX2F-188K2-C\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00',
+            b'PX2G-188K2-D\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00',
+            b'PX2H-188K2-B\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00',
+            b'PX2H-188K2-D\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00',
+            b'PX2H-188K2-G\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00',
+            b'PX2K-188K2-B\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00',
+            b'PX38-188K2-B\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00',
+            b'PX42-188K2-C\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00',
+            b'PX68-188K2-B\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00',
+            b'SHKT-188K2-D\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00',
+        ],
+        (Ecu.fwdRadar, 0x764, None): [
+            b'K123-67XK2-F\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00',
+            b'K131-67XK2-A\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00',
+            b'K131-67XK2-B\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00',
+            b'K131-67XK2-C\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00',
+            b'K131-67XK2-E\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00',
+            b'K131-67XK2-F\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00',
+        ],
+        (Ecu.esp, 0x760, None): [
+            b'K123-437K2-E\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00',
+            b'KBJ5-437K2-B\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00',
+            b'KL2K-437K2-A\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00',
+            b'KN0W-437K2-C\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00',
+        ],
+        (Ecu.fwdCamera, 0x706, None): [
+            b'B61L-67XK2-R\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00',
+            b'B61L-67XK2-S\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00',
+            b'B61L-67XK2-T\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00',
+            b'B61L-67XK2-V\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00',
+            b'GSH7-67XK2-J\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00',
+            b'GSH7-67XK2-M\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00',
+            b'GSH7-67XK2-N\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00',
+            b'GSH7-67XK2-R\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00',
+        ],
+        (Ecu.transmission, 0x7e1, None): [
+            b'PA66-21PS1-A\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00',
+            b'PX39-21PS1-B\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00',
+            b'PX39-21PS1-D\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00',
+            b'PX68-21PS1-B\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00',
+            b'PYB1-21PS1-B\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00',
+            b'PYB1-21PS1-C\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00',
+            b'PYB1-21PS1-G\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00',
+            b'PYB2-21PS1-B\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00',
+            b'PYB2-21PS1-C\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00',
+            b'PYB2-21PS1-D\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00',
+            b'PYB2-21PS1-G\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00',
+            b'PYB2-21PS1-H\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00',
+            b'PYNC-21PS1-B\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00',
+            b'SH9T-21PS1-D\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00',
+        ],
+    },
+    CAR.CX5_PID: {
         (Ecu.eps, 0x730, None): [
             b'KJ01-3210X-G-00\x00\x00\x00\x00\x00\x00\x00\x00\x00',
             b'KJ01-3210X-J-00\x00\x00\x00\x00\x00\x00\x00\x00\x00',
@@ -293,6 +360,7 @@ FW_VERSIONS = {
 
 DBC = {
     CAR.CX5: dbc_dict('mazda_2017', None),
+    CAR.CX5_PID: dbc_dict('mazda_2017', None),
     CAR.CX9: dbc_dict('mazda_2017', None),
     CAR.MAZDA3: dbc_dict('mazda_2017', None),
     CAR.MAZDA6: dbc_dict('mazda_2017', None),
@@ -301,4 +369,4 @@ DBC = {
 }
 
 # Gen 1 hardware: same CAN messages and same camera
-GEN1 = {CAR.CX5, CAR.CX9, CAR.CX9_2021, CAR.MAZDA3, CAR.MAZDA6, CAR.CX5_2022}
+GEN1 = {CAR.CX5, CAR.CX5_PID, CAR.CX9, CAR.CX9_2021, CAR.MAZDA3, CAR.MAZDA6, CAR.CX5_2022}
