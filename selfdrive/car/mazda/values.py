@@ -12,7 +12,7 @@ Ecu = car.CarParams.Ecu
 # Steer torque limits
 
 class CarControllerParams:
-    STEER_MAX = 800 + 200        # theoretical max_steer 2047 TODO:+200 方向盤的最大扭力值
+    STEER_MAX = 800        # theoretical max_steer 2047 TODO:方向盤的最大扭力值 +200報錯失敗
     STEER_DELTA_UP = 10          # torque increase per refresh TODO: 此值是設定當車輛進入彎道後，每次傳送扭力值給車輛的間隔時間。因此此值越大，方向盤轉動速度就越快。
     STEER_DELTA_DOWN = 25        # torque decrease per refresh 調整車輛脫離彎道時扭力值傳送的間隔時間
     STEER_DRIVER_ALLOWANCE = 15  # allowed driver torque before start limiting
@@ -216,7 +216,6 @@ FW_VERSIONS = {
             b'SH9T-21PS1-D\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00',
         ],
     },
-
     CAR.CX9: {
         (Ecu.eps, 0x730, None): [
             b'K070-3210X-C-00\x00\x00\x00\x00\x00\x00\x00\x00\x00',

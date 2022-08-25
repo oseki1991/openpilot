@@ -266,9 +266,9 @@ class CarInterfaceBase(ABC):
             self.dp_last_cruise_actual_enabled = ret.cruiseActualEnabled
         return events
 
-    def dp_atl_mode(self, ret):  # TODO:DP全時車道置中狀態？？
-        enable = ret.cruiseState.enabled
-        available = ret.cruiseState.available
+    def dp_atl_mode(self, ret):  # TODO:DP全時車道置中狀態 ok
+        enable = ret.cruiseState.enabled  # acc待命狀態
+        available = ret.cruiseState.available  # acc開關
         if self.dragonconf.dpAtl > 0 and available:
             enable = True
             if ret.gearShifter in [car.CarState.GearShifter.reverse, car.CarState.GearShifter.park]:
@@ -277,7 +277,7 @@ class CarInterfaceBase(ABC):
             if ret.seatbeltUnlatched or ret.doorOpen:
                 enable = False
                 available = False
-            if ret.leftBlinker or ret.rightBlinker:  # 方向燈狀態
+            if ret.leftBlinker or ret.rightBlinker:  # 方向燈狀態 ok
                 enable = False
 
         return enable, available
