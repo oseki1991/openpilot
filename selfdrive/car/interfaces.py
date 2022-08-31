@@ -9,7 +9,7 @@ from common.basedir import BASEDIR
 from common.conversions import Conversions as CV
 from common.kalman.simple_kalman import KF1D
 from common.realtime import DT_CTRL
-from selfdrive.car import gen_empty_fingerprint
+from selfdrive.car import create_button_enable_events, gen_empty_fingerprint
 from selfdrive.controls.lib.drive_helpers import V_CRUISE_MAX
 from selfdrive.controls.lib.events import Events
 from selfdrive.controls.lib.vehicle_model import VehicleModel
@@ -233,6 +233,9 @@ class CarInterfaceBase(ABC):
         if self.dragonconf.dpAtl != 1 and cs_out.accFaulted:
             events.add(EventName.accFaulted)
 
+        # Handle button presses
+        events.events.extend(create_button_enable_events(cs_out.buttonEvents, pcm_cruise=self.CP.pcmCruise))
+
         # Handle permanent and temporary steering faults
         self.steering_unpressed = 0 if cs_out.steeringPressed else self.steering_unpressed + 1
         if cs_out.steerFaultTemporary:
@@ -266,9 +269,9 @@ class CarInterfaceBase(ABC):
             self.dp_last_cruise_actual_enabled = ret.cruiseActualEnabled
         return events
 
-    def dp_atl_mode(self, ret):  # TODO:DP全時車道置中狀態 ok
-        enable = ret.cruiseState.enabled  # acc待命狀態
-        available = ret.cruiseState.available  # acc開關
+    def dp_atl_mode(self, ret):
+        enable = ret.cruiseState.enabled
+        available = ret.cruiseState.available
         if self.dragonconf.dpAtl > 0 and available:
             enable = True
             if ret.gearShifter in [car.CarState.GearShifter.reverse, car.CarState.GearShifter.park]:
@@ -279,7 +282,6 @@ class CarInterfaceBase(ABC):
                 available = False
             if ret.leftBlinker or ret.rightBlinker:  # 方向燈狀態 ok
                 enable = False
-
         return enable, available
 
 

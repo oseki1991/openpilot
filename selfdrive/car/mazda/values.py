@@ -12,13 +12,13 @@ Ecu = car.CarParams.Ecu
 # Steer torque limits
 
 class CarControllerParams:
-    STEER_MAX = 800        # theoretical max_steer 2047 TODO:方向盤的最大扭力值 +200報錯失敗
-    STEER_DELTA_UP = 10          # torque increase per refresh TODO: 此值是設定當車輛進入彎道後，每次傳送扭力值給車輛的間隔時間。因此此值越大，方向盤轉動速度就越快。
-    STEER_DELTA_DOWN = 25        # torque decrease per refresh 調整車輛脫離彎道時扭力值傳送的間隔時間
+    STEER_MAX = 800  # theoretical max_steer 2047
+    STEER_DELTA_UP = 10  # torque increase per refresh
+    STEER_DELTA_DOWN = 25  # torque decrease per refresh
     STEER_DRIVER_ALLOWANCE = 15  # allowed driver torque before start limiting
     STEER_DRIVER_MULTIPLIER = 1  # weight driver torque
-    STEER_DRIVER_FACTOR = 1      # from dbc
-    STEER_ERROR_MAX = 350        # max delta between torque cmd and torque motor
+    STEER_DRIVER_FACTOR = 1  # from dbc
+    STEER_ERROR_MAX = 350  # max delta between torque cmd and torque motor
 
 
 class CAR:
@@ -43,7 +43,7 @@ CAR_INFO: Dict[str, Union[MazdaCarInfo, List[MazdaCarInfo]]] = {
     CAR.CX9: MazdaCarInfo("Mazda CX-9 2016-20"),
     CAR.MAZDA3: MazdaCarInfo("Mazda 3 2017-18"),
     CAR.MAZDA6: MazdaCarInfo("Mazda 6 2017-20"),
-    CAR.CX9_2021: MazdaCarInfo("Mazda CX-9 2021-22"),
+    CAR.CX9_2021: MazdaCarInfo("Mazda CX-9 2021-22", video_link="https://youtu.be/dA3duO4a0O4"),
     CAR.CX5_2022: MazdaCarInfo("Mazda CX-5 2022"),
 }
 
@@ -71,6 +71,7 @@ FW_VERSIONS = {
             b'PX2G-188K2-H\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00',
             b'PX2H-188K2-H\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00',
             b'SH54-188K2-D\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00',
+            b'PXFG-188K2-C\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00',
         ],
         (Ecu.fwdRadar, 0x764, None): [
             b'K131-67XK2-F\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00',
@@ -84,6 +85,7 @@ FW_VERSIONS = {
         (Ecu.transmission, 0x7e1, None): [
             b'PYB2-21PS1-H\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00',
             b'SH51-21PS1-C\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00',
+            b'PXFG-21PS1-A\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00',
         ],
     },
     CAR.CX5: {
@@ -151,6 +153,7 @@ FW_VERSIONS = {
             b'SH9T-21PS1-D\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00',
         ],
     },
+
     CAR.CX5_PID: {
         (Ecu.eps, 0x730, None): [
             b'KJ01-3210X-G-00\x00\x00\x00\x00\x00\x00\x00\x00\x00',
@@ -216,6 +219,7 @@ FW_VERSIONS = {
             b'SH9T-21PS1-D\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00',
         ],
     },
+
     CAR.CX9: {
         (Ecu.eps, 0x730, None): [
             b'K070-3210X-C-00\x00\x00\x00\x00\x00\x00\x00\x00\x00',

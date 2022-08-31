@@ -24,18 +24,19 @@ class CarInterface(CarInterfaceBase):
         ret.safetyConfigs = [get_safety_config(car.CarParams.SafetyModel.mazda)]
         ret.radarOffCan = True
 
-        ret.dashcamOnly = False  # 強制關閉行車記錄器模式
+        ret.dashcamOnly = candidate not in (CAR.CX5_2022, CAR.CX9_2021)
 
-        ret.steerActuatorDelay = 0.1 + 0.11  # 預設0.1 轉向延遲補償
-        ret.steerLimitTimer = 0.8 + 0.8  # 預設0.8 警告延遲時間
-        tire_stiffness_factor = 0.70  # not optimized yet 避震？輪胎？
+        ret.steerActuatorDelay = 0.1 + 0.1  # 預設0.1 轉向延遲補償
+        ret.steerRateCost = 1.0
+        ret.steerLimitTimer = 0.8 + 0.7  # 預設0.8 警告延遲時間
+        tire_stiffness_factor = 0.70  # not optimized yet
 
         CarInterfaceBase.configure_torque_tune(candidate, ret.lateralTuning)
 
         if candidate in (CAR.CX5, CAR.CX5_2022):
-            ret.mass = 3655 * CV.LB_TO_KG + STD_CARGO_KG  # 車重 預設3655, 18 CX-5 2.0 = 3450
-            ret.wheelbase = 2.7  # 軸距
-            ret.steerRatio = 15.5  # 預設15.5 轉向角度
+            ret.mass = 3655 * CV.LB_TO_KG + STD_CARGO_KG
+            ret.wheelbase = 2.7
+            ret.steerRatio = 15.5
         elif candidate == CAR.CX5_PID:  # 測試用
             ret.steerActuatorDelay = 0.1 + 0.15  # 預設0.1 轉向延遲補償
             ret.mass = 3450 * CV.LB_TO_KG + STD_CARGO_KG  # 車重 預設3655, 18 CX-5 2.0 = 3450

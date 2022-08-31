@@ -111,10 +111,11 @@ struct CarEvent @0x9b1657f34caf3ad3 {
     lkasDisabled @107;
     canBusMissing @111;
     controlsdLagging @112;
+    resumeBlocked @113;
 
     #dp
-    speedLimitActive @113;
-    speedLimitValueChange @114;
+    speedLimitActive @114;
+    speedLimitValueChange @115;
 
     radarCanErrorDEPRECATED @15;
     communityFeatureDisallowedDEPRECATED @62;
@@ -587,7 +588,7 @@ struct CarParams {
     stellantis @25;
     faw @26;
     body @27;
-    hyundaiHDA2 @28;
+    hyundaiCanfd @28;
   }
 
   enum SteerControlType {

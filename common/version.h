@@ -1,1 +1,1 @@
-#define COMMA_VERSION "TORO.ver.2022.08.25"
+#define COMMA_VERSION "2022.08.26"
