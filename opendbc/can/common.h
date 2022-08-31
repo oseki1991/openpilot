@@ -12,18 +12,25 @@
 #include "cereal/gen/cpp/log.capnp.h"
 #endif
 
-#define MAX_BAD_COUNTER 5
+#define INFO printf
+#define WARN printf
+#define DEBUG(...)
+//#define DEBUG printf
 
-// Helper functions
-unsigned int honda_checksum(unsigned int address, uint64_t d, int l);
-unsigned int toyota_checksum(unsigned int address, uint64_t d, int l);
-unsigned int subaru_checksum(unsigned int address, uint64_t d, int l);
-unsigned int chrysler_checksum(unsigned int address, uint64_t d, int l);
+#define MAX_BAD_COUNTER 5
+#define CAN_INVALID_CNT 5
+
 void init_crc_lookup_tables();
-unsigned int volkswagen_crc(unsigned int address, uint64_t d, int l);
-unsigned int pedal_checksum(uint64_t d, int l);
-uint64_t read_u64_be(const uint8_t* v);
-uint64_t read_u64_le(const uint8_t* v);
+
+// Car specific functions
+unsigned int honda_checksum(uint32_t address, const Signal &sig, const std::vector<uint8_t> &d);
+unsigned int toyota_checksum(uint32_t address, const Signal &sig, const std::vector<uint8_t> &d);
+unsigned int subaru_checksum(uint32_t address, const Signal &sig, const std::vector<uint8_t> &d);
+unsigned int chrysler_checksum(uint32_t address, const Signal &sig, const std::vector<uint8_t> &d);
+unsigned int volkswagen_mqb_checksum(uint32_t address, const Signal &sig, const std::vector<uint8_t> &d);
+unsigned int xor_checksum(uint32_t address, const Signal &sig, const std::vector<uint8_t> &d);
+unsigned int hkg_can_fd_checksum(uint32_t address, const Signal &sig, const std::vector<uint8_t> &d);
+unsigned int pedal_checksum(uint32_t address, const Signal &sig, const std::vector<uint8_t> &d);
 
 class MessageState {
 public:
@@ -34,7 +41,7 @@ public:
   std::vector<double> vals;
   std::vector<std::vector<double>> all_vals;
 
-  uint64_t seen;
+  uint64_t last_seen_nanos;
   uint64_t check_threshold;
 
   uint8_t counter;
@@ -43,7 +50,7 @@ public:
   bool ignore_checksum = false;
   bool ignore_counter = false;
 
-  bool parse(uint64_t sec, uint8_t * dat);
+  bool parse(uint64_t sec, const std::vector<uint8_t> &dat);
   bool update_counter_generic(int64_t v, int cnt_size);
 };
 
@@ -57,7 +64,12 @@ private:
 
 public:
   bool can_valid = false;
+  bool bus_timeout = false;
+  uint64_t first_sec = 0;
   uint64_t last_sec = 0;
+  uint64_t last_nonempty_sec = 0;
+  uint64_t bus_timeout_threshold = 0;
+  uint64_t can_invalid_cnt = CAN_INVALID_CNT;
 
   CANParser(int abus, const std::string& dbc_name,
             const std::vector<MessageParseOptions> &options,
@@ -77,9 +89,10 @@ private:
   const DBC *dbc = NULL;
   std::map<std::pair<uint32_t, std::string>, Signal> signal_lookup;
   std::map<uint32_t, Msg> message_lookup;
+  std::map<uint32_t, uint32_t> counters;
 
 public:
   CANPacker(const std::string& dbc_name);
-  uint64_t pack(uint32_t address, const std::vector<SignalPackValue> &values, int counter);
+  std::vector<uint8_t> pack(uint32_t address, const std::vector<SignalPackValue> &values);
   Msg* lookup_message(uint32_t address);
 };
