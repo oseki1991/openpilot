@@ -4,7 +4,7 @@ from libcpp cimport bool
 from libcpp.string cimport string
 import threading
 
-cdef extern from "common/params.h":
+cdef extern from "selfdrive/common/params.h":
   cpdef enum ParamKeyType:
     PERSISTENT
     CLEAR_ON_MANAGER_START
@@ -20,7 +20,6 @@ cdef extern from "common/params.h":
     int put(string, string) nogil
     int putBool(string, bool) nogil
     bool checkKey(string) nogil
-    string getParamPath(string) nogil
     void clearAll(ParamKeyType)
 
 
@@ -95,12 +94,12 @@ cdef class Params:
     with nogil:
       self.p.remove(k)
 
-  def get_param_path(self, key=""):
-    cdef string key_bytes = ensure_bytes(key)
-    return self.p.getParamPath(key_bytes).decode("utf-8")
-
 def put_nonblocking(key, val, d=""):
-  threading.Thread(target=lambda: Params(d).put(key, val)).start()
+  def f(key, val):
+    params = Params(d)
+    cdef string k = ensure_bytes(key)
+    params.put(k, val)
 
-def put_bool_nonblocking(key, bool val, d=""):
-  threading.Thread(target=lambda: Params(d).put_bool(key, val)).start()
+  t = threading.Thread(target=f, args=(key, val))
+  t.start()
+  return t

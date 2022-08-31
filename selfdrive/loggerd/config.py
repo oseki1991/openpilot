@@ -1,18 +1,13 @@
 import os
 from pathlib import Path
-from system.hardware import PC
-from common.params import Params
+from selfdrive.hardware import PC
 
 if os.environ.get('LOG_ROOT', False):
   ROOT = os.environ['LOG_ROOT']
 elif PC:
   ROOT = os.path.join(str(Path.home()), ".comma", "media", "0", "realdata")
 else:
-  params = Params()
-  if int(params.get('dp_atl', encoding='utf8')) > 0 or params.get_bool('dp_jetson') or params.get_bool('dp_api_custom'):
-    ROOT = '/data/media/0/fakedata/'
-  else:
-    ROOT = '/data/media/0/realdata/'
+  ROOT = '/data/media/0/realdata/'
 
 
 CAMERA_FPS = 20

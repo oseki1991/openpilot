@@ -3,14 +3,23 @@ from cereal import log
 from common.filter_simple import FirstOrderFilter
 from common.numpy_fast import interp
 from common.realtime import DT_MDL
-from system.swaglog import cloudlog
+from selfdrive.hardware import EON, TICI
+from selfdrive.swaglog import cloudlog
 
 
 TRAJECTORY_SIZE = 33
 # camera offset is meters from center car to camera
-# model path is in the frame of the camera
-PATH_OFFSET = 0.00
-CAMERA_OFFSET = 0.04
+# model path is in the frame of EON's camera. TICI is 0.1 m away,
+# however the average measured path difference is 0.04 m
+if EON:
+  CAMERA_OFFSET = -0.06
+  PATH_OFFSET = 0.0
+elif TICI:
+  CAMERA_OFFSET = 0.04
+  PATH_OFFSET = 0.04
+else:
+  CAMERA_OFFSET = 0.0
+  PATH_OFFSET = 0.0
 
 
 class LanePlanner:

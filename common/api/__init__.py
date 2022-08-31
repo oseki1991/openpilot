@@ -3,10 +3,9 @@ import os
 import requests
 from datetime import datetime, timedelta
 from common.basedir import PERSIST
-from system.version import get_version
+from selfdrive.version import get_version
 
-from common.params import Params
-API_HOST = os.getenv('API_HOST', 'https://api.commadotai.com') if not Params().get_bool("dp_api_custom") else Params().get("dp_api_custom_url", encoding='utf-8')
+API_HOST = os.getenv('API_HOST', 'https://api.commadotai.com')
 
 class Api():
   def __init__(self, dongle_id):
@@ -23,13 +22,13 @@ class Api():
   def request(self, method, endpoint, timeout=None, access_token=None, **params):
     return api_get(endpoint, method=method, timeout=timeout, access_token=access_token, **params)
 
-  def get_token(self, expiry_hours=1):
+  def get_token(self):
     now = datetime.utcnow()
     payload = {
       'identity': self.dongle_id,
       'nbf': now,
       'iat': now,
-      'exp': now + timedelta(hours=expiry_hours)
+      'exp': now + timedelta(hours=1)
     }
     token = jwt.encode(payload, self.private_key, algorithm='RS256')
     if isinstance(token, bytes):

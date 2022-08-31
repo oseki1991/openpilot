@@ -1,9 +1,10 @@
-def create_steer_command(packer, steer, steer_req):
+def create_steer_command(packer, steer, steer_req, raw_cnt):
   """Creates a CAN message for the Toyota Steer Command."""
 
   values = {
     "STEER_REQUEST": steer_req,
     "STEER_TORQUE_CMD": steer,
+    "COUNTER": raw_cnt,
     "SET_ME_1": 1,
   }
   return packer.make_can_msg("STEERING_LKA", 0, values)
@@ -18,7 +19,7 @@ def create_lta_steer_command(packer, steer, steer_req, raw_cnt):
     "SETME_X3": 3,
     "PERCENTAGE": 100,
     "SETME_X64": 0x64,
-    "ANGLE": 0,
+    "ANGLE": 0,  # Rate limit? Lower values seeem to work better, but needs more testing
     "STEER_ANGLE_CMD": steer,
     "STEER_REQUEST": steer_req,
     "STEER_REQUEST_2": steer_req,
@@ -27,12 +28,12 @@ def create_lta_steer_command(packer, steer, steer_req, raw_cnt):
   return packer.make_can_msg("STEERING_LTA", 0, values)
 
 
-def create_accel_command(packer, accel, pcm_cancel, standstill_req, lead, acc_type, distance):
+def create_accel_command(packer, accel, pcm_cancel, standstill_req, lead, acc_type):
   # TODO: find the exact canceling bit that does not create a chime
   values = {
     "ACCEL_CMD": accel,
     "ACC_TYPE": acc_type,
-    "DISTANCE": distance,
+    "DISTANCE": 0,
     "MINI_CAR": lead,
     "PERMIT_BRAKING": 1,
     "RELEASE_STANDSTILL": not standstill_req,

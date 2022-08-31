@@ -32,7 +32,6 @@ a.out
 *.class
 *.pyxbldc
 *.vcd
-*.qm
 config.json
 clcache
 compile_commands.json
@@ -42,20 +41,21 @@ board/obj/
 selfdrive/boardd/boardd
 selfdrive/logcatd/logcatd
 selfdrive/mapd/default_speeds_by_region.json
-system/proclogd/proclogd
+selfdrive/proclogd/proclogd
 selfdrive/ui/_ui
 selfdrive/test/longitudinal_maneuvers/out
 selfdrive/visiond/visiond
+selfdrive/loggerd/loggerd
+selfdrive/loggerd/bootlog
 selfdrive/sensord/_gpsd
 selfdrive/sensord/_sensord
-system/camerad/camerad
-system/camerad/test/ae_gray_test
+selfdrive/camerad/camerad
+selfdrive/camerad/test/ae_gray_test
 selfdrive/modeld/_modeld
 selfdrive/modeld/_dmonitoringmodeld
 /src/
 
 one
-/body/
 openpilot
 notebooks
 xx
@@ -76,12 +76,10 @@ cppcheck_report.txt
 comma*.sh
 
 selfdrive/modeld/thneed/compile
-selfdrive/modeld/models/*.thneed
+models/*.thneed
 
 *.bz2
 
 build/
 
 !**/.gitkeep
-
-*.po~

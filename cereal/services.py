@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
+import os
 from typing import Optional
 
+TICI = os.path.isfile('/TICI')
 RESERVED_PORT = 8022  # sshd
 STARTING_PORT = 8001
 
@@ -17,10 +19,10 @@ class Service:
     self.frequency = frequency
     self.decimation = decimation
 
+DCAM_FREQ = 10. if not TICI else 20.
 
 services = {
   # service: (should_log, frequency, qlog decimation (optional))
-  # note: the "EncodeIdx" packets will still be in the log
   "sensorEvents": (True, 100., 100),
   "gpsNMEA": (True, 9.),
   "deviceState": (True, 2., 1),
@@ -29,7 +31,7 @@ services = {
   "pandaStates": (True, 2., 1),
   "peripheralState": (True, 2., 1),
   "radarState": (True, 20., 5),
-  "roadEncodeIdx": (False, 20., 1),
+  "roadEncodeIdx": (True, 20., 1),
   "liveTracks": (True, 20.),
   "sendcan": (True, 100., 139),
   "logMessage": (True, 0.),
@@ -41,10 +43,7 @@ services = {
   "longitudinalPlan": (True, 20., 5),
   "procLog": (True, 0.5),
   "gpsLocationExternal": (True, 10., 10),
-  "gpsLocation": (True, 1., 1),
   "ubloxGnss": (True, 10.),
-  "qcomGnss": (True, 2.),
-  "gnssMeasurements": (True, 10., 10),
   "clocks": (True, 1., 1),
   "ubloxRaw": (True, 20.),
   "liveLocationKalman": (True, 20., 5),
@@ -55,30 +54,21 @@ services = {
   "carEvents": (True, 1., 1),
   "carParams": (True, 0.02, 1),
   "roadCameraState": (True, 20., 20),
-  "driverCameraState": (True, 20., 20),
-  "driverEncodeIdx": (False, 20., 1),
-  "driverStateV2": (True, 20., 10),
-  "driverMonitoringState": (True, 20., 10),
-  "wideRoadEncodeIdx": (False, 20., 1),
+  "driverCameraState": (True, DCAM_FREQ, DCAM_FREQ),
+  "driverEncodeIdx": (True, DCAM_FREQ, 1),
+  "driverState": (True, DCAM_FREQ, DCAM_FREQ / 2),
+  "driverMonitoringState": (True, DCAM_FREQ, DCAM_FREQ / 2),
+  "wideRoadEncodeIdx": (True, 20., 1),
   "wideRoadCameraState": (True, 20., 20),
   "modelV2": (True, 20., 40),
   "managerState": (True, 2., 1),
   "uploaderState": (True, 0., 1),
-  "navInstruction": (True, 1., 10),
+  "navInstruction": (True, 0.),
   "navRoute": (True, 0.),
   "navThumbnail": (True, 0.),
-  "qRoadEncodeIdx": (False, 20.),
 
   # debug
-  "testJoystick": (True, 0.),
-  "roadEncodeData": (False, 20.),
-  "driverEncodeData": (False, 20.),
-  "wideRoadEncodeData": (False, 20.),
-  "qRoadEncodeData": (False, 20.),
-
-  # dp
-  "dragonConf": (False, 1.),
-  "liveMapData": (True, 0.),
+  "testJoystick": (False, 0.),
 }
 service_list = {name: Service(new_port(idx), *vals) for  # type: ignore
                 idx, (name, vals) in enumerate(services.items())}

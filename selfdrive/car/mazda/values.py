@@ -1,9 +1,4 @@
-from dataclasses import dataclass
-from enum import Enum
-from typing import Dict, List, Union
-
 from selfdrive.car import dbc_dict
-from selfdrive.car.docs_definitions import CarInfo, Harness
 from cereal import car
 Ecu = car.CarParams.Ecu
 
@@ -19,7 +14,6 @@ class CarControllerParams:
   STEER_DRIVER_FACTOR = 1         # from dbc
   STEER_ERROR_MAX = 350           # max delta between torque cmd and torque motor
 
-
 class CAR:
   CX5 = "MAZDA CX-5"
   CX9 = "MAZDA CX-9"
@@ -27,23 +21,6 @@ class CAR:
   MAZDA6 = "MAZDA 6"
   CX9_2021 = "MAZDA CX-9 2021"
   CX5_2022 = "MAZDA CX-5 2022"
-
-
-@dataclass
-class MazdaCarInfo(CarInfo):
-  package: str = "All"
-  harness: Enum = Harness.mazda
-
-
-CAR_INFO: Dict[str, Union[MazdaCarInfo, List[MazdaCarInfo]]] = {
-  CAR.CX5: MazdaCarInfo("Mazda CX-5 2017-21"),
-  CAR.CX9: MazdaCarInfo("Mazda CX-9 2016-20"),
-  CAR.MAZDA3: MazdaCarInfo("Mazda 3 2017-18"),
-  CAR.MAZDA6: MazdaCarInfo("Mazda 6 2017-20"),
-  CAR.CX9_2021: MazdaCarInfo("Mazda CX-9 2021-22"),
-  CAR.CX5_2022: MazdaCarInfo("Mazda CX-5 2022"),
-}
-
 
 class LKAS_LIMITS:
   STEER_THRESHOLD = 15
@@ -66,7 +43,6 @@ FW_VERSIONS = {
     (Ecu.engine, 0x7e0, None): [
       b'PX2G-188K2-H\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00',
       b'PX2H-188K2-H\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00',
-      b'SH54-188K2-D\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00',
     ],
     (Ecu.fwdRadar, 0x764, None): [
       b'K131-67XK2-F\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00',
@@ -79,7 +55,6 @@ FW_VERSIONS = {
     ],
     (Ecu.transmission, 0x7e1, None): [
       b'PYB2-21PS1-H\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00',
-      b'SH51-21PS1-C\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00',
     ],
   },
   CAR.CX5: {
@@ -198,6 +173,7 @@ FW_VERSIONS = {
 
   CAR.MAZDA3: {
     (Ecu.eps, 0x730, None): [
+      b'BHN1-3210X-F-00\x00\x00\x00\x00\x00\x00\x00\x00\x00',
       b'BHN1-3210X-J-00\x00\x00\x00\x00\x00\x00\x00\x00\x00',
       b'K070-3210X-C-00\x00\x00\x00\x00\x00\x00\x00\x00\x00',
       b'KR11-3210X-K-00\x00\x00\x00\x00\x00\x00\x00\x00\x00',
@@ -206,6 +182,7 @@ FW_VERSIONS = {
     (Ecu.engine, 0x7e0, None): [
       b'P5JD-188K2-B\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00',
       b'PY2P-188K2-C\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00',
+      b'PY6V-188K2-B\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00',
       b'PYJW-188K2-C\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00',
       b'PYKC-188K2-D\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00',
       b'PYKE-188K2-B\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00',
@@ -213,9 +190,11 @@ FW_VERSIONS = {
     (Ecu.fwdRadar, 0x764, None): [
       b'B63C-67XK2-C\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00',
       b'GHP9-67Y10---41\x00\x00\x00\x00\x00\x00\x00\x00\x00',
+      b'GHP9-67Y10---44\x00\x00\x00\x00\x00\x00\x00\x00\x00',
       b'K131-67XK2-C\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00',
     ],
     (Ecu.esp, 0x760, None): [
+      b'B45A-437AS-0-05\x00\x00\x00\x00\x00\x00\x00\x00\x00',
       b'B45A-437AS-0-08\x00\x00\x00\x00\x00\x00\x00\x00\x00',
     ],
     (Ecu.fwdCamera, 0x706, None): [
@@ -223,10 +202,12 @@ FW_VERSIONS = {
       b'B61L-67XK2-P\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00',
       b'B61L-67XK2-Q\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00',
       b'B61L-67XK2-T\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00',
+      b'BHS2-67XCX\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00',
     ],
     (Ecu.transmission, 0x7e1, None): [
-      b'PY2S-21PS1-C\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00',
       b'P52G-21PS1-F\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00',
+      b'PY2S-21PS1-C\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00',
+      b'PY6V-21PS1-A\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00',
       b'PYKA-21PS1-A\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00',
       b'PYKE-21PS1-A\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00',
       b'PYKE-21PS1-B\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00',
@@ -267,7 +248,6 @@ FW_VERSIONS = {
     (Ecu.engine, 0x7e0, None): [
       b'PXM4-188K2-C\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00',
       b'PXM4-188K2-D\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00',
-      b'PXM6-188K2-E\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00',
     ],
     (Ecu.fwdRadar, 0x764, None): [
       b'K131-67XK2-E\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00',
@@ -280,11 +260,9 @@ FW_VERSIONS = {
       b'GSH7-67XK2-M\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00',
       b'GSH7-67XK2-N\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00',
       b'GSH7-67XK2-P\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00',
-      b'GSH7-67XK2-S\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00',
     ],
     (Ecu.transmission, 0x7e1, None): [
       b'PXM4-21PS1-B\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00',
-      b'PXM6-21PS1-B\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00',
     ],
   }
 }

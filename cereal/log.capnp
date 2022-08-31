@@ -3,7 +3,6 @@ $Cxx.namespace("cereal");
 
 using Car = import "car.capnp";
 using Legacy = import "legacy.capnp";
-using Dp = import "dp.capnp";
 
 @0xf3b1f17e25a4285b;
 
@@ -120,7 +119,6 @@ struct InitData {
 struct FrameData {
   frameId @0 :UInt32;
   encodeId @1 :UInt32; # DEPRECATED
-  frameIdSensor @25 :UInt32;
 
   frameType @7 :FrameType;
   frameLength @3 :Int32;
@@ -128,7 +126,6 @@ struct FrameData {
   # Timestamps
   timestampEof @2 :UInt64;
   timestampSof @8 :UInt64;
-  processingTime @23 :Float32;
 
   # Exposure
   integLines @4 :Int32;
@@ -153,8 +150,6 @@ struct FrameData {
 
   image @6 :Data;
   globalGainDEPRECATED @5 :Int32;
-
-  temperaturesC @24 :List(Float32);
 
   enum FrameType {
     unknown @0;
@@ -252,7 +247,9 @@ struct GpsLocationData {
   # Represents expected accuracy in meters. (presumably 1 sigma?)
   accuracy @6 :Float32;
 
-  unixTimestampMillis @7 :Int64;
+  # Timestamp for the location fix.
+  # Milliseconds since January 1, 1970.
+  timestamp @7 :Int64;
 
   source @8 :SensorSource;
 
@@ -277,7 +274,6 @@ struct GpsLocationData {
     external @5;
     ublox @6;
     trimble @7;
-    qcomdiag @8;
   }
 }
 
@@ -293,8 +289,6 @@ struct DeviceState @0xa4d8b5af2aa492eb {
   networkType @22 :NetworkType;
   networkInfo @31 :NetworkInfo;
   networkStrength @24 :NetworkStrength;
-  networkStats @43 :NetworkStats;
-  networkMetered @41 :Bool;
   lastAthenaPingTime @32 :UInt64;
 
   started @11 :Bool;
@@ -314,7 +308,6 @@ struct DeviceState @0xa4d8b5af2aa492eb {
   offroadPowerUsageUwh @23 :UInt32;
   carBatteryCapacityUwh @25 :UInt32;
   powerDrawW @40 :Float32;
-  somPowerDrawW @42 :Float32;
 
   # device thermals
   cpuTempC @26 :List(Float32);
@@ -369,11 +362,6 @@ struct DeviceState @0xa4d8b5af2aa492eb {
     state @5 :Text;
   }
 
-  struct NetworkStats {
-    wwanTx @0 :Int64;
-    wwanRx @1 :Int64;
-  }
-
   # deprecated
   cpu0DEPRECATED @0 :UInt16;
   cpu1DEPRECATED @1 :UInt16;
@@ -400,8 +388,8 @@ struct PandaState @0xa7649e2575e4591e {
   pandaType @10 :PandaType;
   ignitionCan @13 :Bool;
   safetyModel @14 :Car.CarParams.SafetyModel;
-  safetyParam @27 :UInt16;
-  alternativeExperience @23 :Int16;
+  safetyParam @20 :Int16;
+  unsafeMode @23 :Int16;
   faultStatus @15 :FaultStatus;
   powerSaveEnabled @16 :Bool;
   uptime @17 :UInt32;
@@ -409,7 +397,6 @@ struct PandaState @0xa7649e2575e4591e {
   harnessStatus @21 :HarnessStatus;
   heartbeatLost @22 :Bool;
   blockedCnt @24 :UInt32;
-  interruptLoad @25 :Float32;
 
   enum FaultStatus {
     none @0;
@@ -440,7 +427,6 @@ struct PandaState @0xa7649e2575e4591e {
     interruptRateKlineInit @19;
     interruptRateClockSource @20;
     interruptRateTick @21;
-    interruptRateExti @22;
     # Update max fault type in boardd when adding faults
   }
 
@@ -467,8 +453,6 @@ struct PandaState @0xa7649e2575e4591e {
   hasGpsDEPRECATED @6 :Bool;
   fanSpeedRpmDEPRECATED @11 :UInt16;
   usbPowerModeDEPRECATED @12 :PeripheralState.UsbPowerMode;
-  safetyParamDEPRECATED @20 :Int16;
-  safetyParam2DEPRECATED @26 :UInt32;
 }
 
 struct PeripheralState {
@@ -568,15 +552,12 @@ struct ControlsState @0x97ff69c53601abf1 {
   longControlState @30 :Car.CarControl.Actuators.LongControlState;
   vPid @2 :Float32;
   vTargetLead @3 :Float32;
-  vCruise @22 :Float32;  # actual set speed
-  vCruiseCluster @63 :Float32;  # set speed to display in the UI
+  vCruise @22 :Float32;
   upAccelCmd @4 :Float32;
   uiAccelCmd @5 :Float32;
   ufAccelCmd @33 :Float32;
   aTarget @35 :Float32;
   curvature @37 :Float32;  # path curvature from vehicle model
-  desiredCurvature @61 :Float32;  # lag adjusted curvatures used by lateral controllers
-  desiredCurvatureRate @62 :Float32;
   forceDecel @51 :Bool;
 
   # UI alerts
@@ -598,7 +579,6 @@ struct ControlsState @0x97ff69c53601abf1 {
     lqrState @55 :LateralLQRState;
     angleState @58 :LateralAngleState;
     debugState @59 :LateralDebugState;
-    torqueState @60 :LateralTorqueState;
   }
 
   enum OpenpilotState @0xdbe58b96d2d1ac61 {
@@ -606,7 +586,6 @@ struct ControlsState @0x97ff69c53601abf1 {
     preEnabled @1;
     enabled @2;
     softDisabling @3;
-    overriding @4;
   }
 
   enum AlertStatus {
@@ -649,20 +628,6 @@ struct ControlsState @0x97ff69c53601abf1 {
     output @7 :Float32;
     saturated @8 :Bool;
     steeringAngleDesiredDeg @9 :Float32;
-   }
-
-  struct LateralTorqueState {
-    active @0 :Bool;
-    error @1 :Float32;
-    errorRate @8 :Float32;
-    p @2 :Float32;
-    i @3 :Float32;
-    d @4 :Float32;
-    f @5 :Float32;
-    output @6 :Float32;
-    saturated @7 :Bool;
-    actualLateralAccel @9 :Float32;
-    desiredLateralAccel @10 :Float32;
    }
 
   struct LateralLQRState {
@@ -723,7 +688,6 @@ struct ControlsState @0x97ff69c53601abf1 {
 
 struct ModelDataV2 {
   frameId @0 :UInt32;
-  frameIdExtra @20 :UInt32;
   frameAge @1 :UInt32;
   frameDropPerc @2 :Float32;
   timestampEof @3 :UInt64;
@@ -831,10 +795,6 @@ struct EncodeIndex {
   timestampSof @6 :UInt64;
   timestampEof @7 :UInt64;
 
-  # encoder metadata
-  flags @8 :UInt32;
-  len @9 :UInt32;
-
   enum Type {
     bigBoxLossless @0;   # rcamera.mkv
     fullHEVC @1;         # fcamera.hevc
@@ -842,7 +802,6 @@ struct EncodeIndex {
     chffrAndroidH264 @3; # acamera
     fullLosslessClip @4; # prcamera.mkv
     front @5;            # dcamera.hevc
-    qcameraH264 @6;      # qcamera.ts
   }
 }
 
@@ -870,32 +829,12 @@ struct LongitudinalPlan @0xe00b5b3eba12876c {
 
   solverExecutionTime @35 :Float32;
 
-  #dp
-  visionTurnControllerState @36 :VisionTurnControllerState;
-  visionTurnSpeed @37 :Float32;
-  speedLimitControlState @38 :SpeedLimitControlState;
-  speedLimit @39 :Float32;
-  speedLimitOffset @40 :Float32;
-  distToSpeedLimit @41 :Float32;
-  isMapSpeedLimit @42 :Bool;
-  speedLimitPercOffset @47 :Bool;
-  speedLimitValueOffset @48 :Float32;
-
-  distToTurn @43 :Float32;
-  turnSpeed @44 :Float32;
-  turnSpeedControlState @45 :SpeedLimitControlState;
-  turnSign @46 :Int16;
-
   enum LongitudinalPlanSource {
     cruise @0;
     lead0 @1;
     lead1 @2;
     lead2 @3;
     e2e @4;
-    #dp
-    turn @5;
-    limit @6;
-    turnlimit @7;
   }
 
   # deprecated
@@ -931,34 +870,14 @@ struct LongitudinalPlan @0xe00b5b3eba12876c {
     x @0 :List(Float32);
     y @1 :List(Float32);
   }
-
-  #dp
-  enum SpeedLimitControlState {
-    inactive @0; # No speed limit set or not enabled by parameter.
-    tempInactive @1; # User wants to ignore speed limit until it changes.
-    adapting @2; # Reducing speed to match new speed limit.
-    active @3; # Cruising at speed limit.
-  }
-
-  enum VisionTurnControllerState {
-    disabled @0; # No predicted substancial turn on vision range or feature disabled.
-    entering @1; # A subsantial turn is predicted ahead, adapting speed to turn confort levels.
-    turning @2; # Actively turning. Managing acceleration to provide a roll on turn feeling.
-    leaving @3; # Road ahead straightens. Start to allow positive acceleration.
-  }
 }
 
 struct LateralPlan @0xe1e9318e2ae8b51e {
-  modelMonoTime @31 :UInt64;
   laneWidth @0 :Float32;
   lProb @5 :Float32;
   rProb @7 :Float32;
   dPathPoints @20 :List(Float32);
   dProb @21 :Float32;
-
-  #dp
-  dPathWLinesX @32 :List(Float32);
-  dPathWLinesY @33 :List(Float32);
 
   mpcSolutionValid @9 :Bool;
   desire @17 :Desire;
@@ -1119,60 +1038,6 @@ struct ProcLog {
     active @5 :UInt64;
     inactive @6 :UInt64;
     shared @7 :UInt64;
-  }
-}
-
-struct GnssMeasurements {
-  ubloxMonoTime @0 :UInt64;
-  gpsWeek @1 :Int16;
-  gpsTimeOfWeek @2 :Float64;
-
-  correctedMeasurements @3 :List(CorrectedMeasurement);
-
-  positionECEF @4 :LiveLocationKalman.Measurement;
-  velocityECEF @5 :LiveLocationKalman.Measurement;
-  # Used for debugging:
-  positionFixECEF @6 :LiveLocationKalman.Measurement;
-  # Todo sync this with timing pulse of ublox
-
-  struct CorrectedMeasurement {
-    constellationId @0 :ConstellationId;
-    svId @1 :UInt8;
-    # Is 0 when not Glonass constellation.
-    glonassFrequency @2 :Int8;
-    pseudorange @3 :Float64;
-    pseudorangeStd @4 :Float64;
-    pseudorangeRate @5 :Float64;
-    pseudorangeRateStd @6 :Float64;
-    # Satellite position and velocity [x,y,z]
-    satPos @7 :List(Float64);
-    satVel @8 :List(Float64);
-    ephemerisSource @9 :EphemerisSource;
-  }
-
-  struct EphemerisSource {
-    type @0 :EphemerisSourceType;
-    # first epoch in file:
-    gpsWeek @1 :Int16; # -1 if Nav
-    gpsTimeOfWeek @2 :Int32; # -1 if Nav. Integer for seconds is good enough for logs.
-  }
-
-  enum ConstellationId {
-      # Satellite Constellation using the Ublox gnssid as index
-      gps @0;
-      sbas @1;
-      galileo @2;
-      beidou @3;
-      imes @4;
-      qznss @5;
-      glonass @6;
-  }
-
-  enum EphemerisSourceType {
-    nav @0;
-    # Different ultra-rapid files:
-    nasaUltraRapid @1;
-    glonassIacUltraRapid @2;
   }
 }
 
@@ -1349,297 +1214,6 @@ struct UbloxGnss {
   }
 }
 
-struct QcomGnss @0xde94674b07ae51c1 {
-  logTs @0 :UInt64;
-  union {
-    measurementReport @1 :MeasurementReport;
-    clockReport @2 :ClockReport;
-    drMeasurementReport @3 :DrMeasurementReport;
-    drSvPoly @4 :DrSvPolyReport;
-    rawLog @5 :Data;
-  }
-
-  enum MeasurementSource @0xd71a12b6faada7ee {
-    gps @0;
-    glonass @1;
-    beidou @2;
-    unknown3 @3;
-    unknown4 @4;
-    unknown5 @5;
-    unknown6 @6;
-  }
-
-  enum SVObservationState @0xe81e829a0d6c83e9 {
-    idle @0;
-    search @1;
-    searchVerify @2;
-    bitEdge @3;
-    trackVerify @4;
-    track @5;
-    restart @6;
-    dpo @7;
-    glo10msBe @8;
-    glo10msAt @9;
-  }
-
-  struct MeasurementStatus @0xe501010e1bcae83b {
-    subMillisecondIsValid @0 :Bool;
-    subBitTimeIsKnown @1 :Bool;
-    satelliteTimeIsKnown @2 :Bool;
-    bitEdgeConfirmedFromSignal @3 :Bool;
-    measuredVelocity @4 :Bool;
-    fineOrCoarseVelocity @5 :Bool;
-    lockPointValid @6 :Bool;
-    lockPointPositive @7 :Bool;
-    lastUpdateFromDifference @8 :Bool;
-    lastUpdateFromVelocityDifference @9 :Bool;
-    strongIndicationOfCrossCorelation @10 :Bool;
-    tentativeMeasurement @11 :Bool;
-    measurementNotUsable @12 :Bool;
-    sirCheckIsNeeded @13 :Bool;
-    probationMode @14 :Bool;
-
-    glonassMeanderBitEdgeValid @15 :Bool;
-    glonassTimeMarkValid @16 :Bool;
-
-    gpsRoundRobinRxDiversity @17 :Bool;
-    gpsRxDiversity @18 :Bool;
-    gpsLowBandwidthRxDiversityCombined @19 :Bool;
-    gpsHighBandwidthNu4 @20 :Bool;
-    gpsHighBandwidthNu8 @21 :Bool;
-    gpsHighBandwidthUniform @22 :Bool;
-    multipathIndicator @23 :Bool;
-
-    imdJammingIndicator @24 :Bool;
-    lteB13TxJammingIndicator @25 :Bool;
-    freshMeasurementIndicator @26 :Bool;
-
-    multipathEstimateIsValid @27 :Bool;
-    directionIsValid @28 :Bool;
-  }
-
-  struct MeasurementReport @0xf580d7d86b7b8692 {
-    source @0 :MeasurementSource;
-
-    fCount @1 :UInt32;
-
-    gpsWeek @2 :UInt16;
-    glonassCycleNumber @3 :UInt8;
-    glonassNumberOfDays @4 :UInt16;
-
-    milliseconds @5 :UInt32;
-    timeBias @6 :Float32;
-    clockTimeUncertainty @7 :Float32;
-    clockFrequencyBias @8 :Float32;
-    clockFrequencyUncertainty @9 :Float32;
-
-    sv @10 :List(SV);
-
-    struct SV @0xf10c595ae7bb2c27 {
-      svId @0 :UInt8;
-      observationState @2 :SVObservationState;
-      observations @3 :UInt8;
-      goodObservations @4 :UInt8;
-      gpsParityErrorCount @5 :UInt16;
-      glonassFrequencyIndex @1 :Int8;
-      glonassHemmingErrorCount @6 :UInt8;
-      filterStages @7 :UInt8;
-      carrierNoise @8 :UInt16;
-      latency @9 :Int16;
-      predetectInterval @10 :UInt8;
-      postdetections @11 :UInt16;
-
-      unfilteredMeasurementIntegral @12 :UInt32;
-      unfilteredMeasurementFraction @13 :Float32;
-      unfilteredTimeUncertainty @14 :Float32;
-      unfilteredSpeed @15 :Float32;
-      unfilteredSpeedUncertainty @16 :Float32;
-      measurementStatus @17 :MeasurementStatus;
-      multipathEstimate @18 :UInt32;
-      azimuth @19 :Float32;
-      elevation @20 :Float32;
-      carrierPhaseCyclesIntegral @21 :Int32;
-      carrierPhaseCyclesFraction @22 :UInt16;
-      fineSpeed @23 :Float32;
-      fineSpeedUncertainty @24 :Float32;
-      cycleSlipCount @25 :UInt8;
-    }
-
-  }
-
-  struct ClockReport @0xca965e4add8f4f0b {
-    hasFCount @0 :Bool;
-    fCount @1 :UInt32;
-
-    hasGpsWeek @2 :Bool;
-    gpsWeek @3 :UInt16;
-    hasGpsMilliseconds @4 :Bool;
-    gpsMilliseconds @5 :UInt32;
-    gpsTimeBias @6 :Float32;
-    gpsClockTimeUncertainty @7 :Float32;
-    gpsClockSource @8 :UInt8;
-
-    hasGlonassYear @9 :Bool;
-    glonassYear @10 :UInt8;
-    hasGlonassDay @11 :Bool;
-    glonassDay @12 :UInt16;
-    hasGlonassMilliseconds @13 :Bool;
-    glonassMilliseconds @14 :UInt32;
-    glonassTimeBias @15 :Float32;
-    glonassClockTimeUncertainty @16 :Float32;
-    glonassClockSource @17 :UInt8;
-
-    bdsWeek @18 :UInt16;
-    bdsMilliseconds @19 :UInt32;
-    bdsTimeBias @20 :Float32;
-    bdsClockTimeUncertainty @21 :Float32;
-    bdsClockSource @22 :UInt8;
-
-    galWeek @23 :UInt16;
-    galMilliseconds @24 :UInt32;
-    galTimeBias @25 :Float32;
-    galClockTimeUncertainty @26 :Float32;
-    galClockSource @27 :UInt8;
-
-    clockFrequencyBias @28 :Float32;
-    clockFrequencyUncertainty @29 :Float32;
-    frequencySource @30 :UInt8;
-    gpsLeapSeconds @31 :UInt8;
-    gpsLeapSecondsUncertainty @32 :UInt8;
-    gpsLeapSecondsSource @33 :UInt8;
-
-    gpsToGlonassTimeBiasMilliseconds @34 :Float32;
-    gpsToGlonassTimeBiasMillisecondsUncertainty @35 :Float32;
-    gpsToBdsTimeBiasMilliseconds @36 :Float32;
-    gpsToBdsTimeBiasMillisecondsUncertainty @37 :Float32;
-    bdsToGloTimeBiasMilliseconds @38 :Float32;
-    bdsToGloTimeBiasMillisecondsUncertainty @39 :Float32;
-    gpsToGalTimeBiasMilliseconds @40 :Float32;
-    gpsToGalTimeBiasMillisecondsUncertainty @41 :Float32;
-    galToGloTimeBiasMilliseconds @42 :Float32;
-    galToGloTimeBiasMillisecondsUncertainty @43 :Float32;
-    galToBdsTimeBiasMilliseconds @44 :Float32;
-    galToBdsTimeBiasMillisecondsUncertainty @45 :Float32;
-
-    hasRtcTime @46 :Bool;
-    systemRtcTime @47 :UInt32;
-    fCountOffset @48 :UInt32;
-    lpmRtcCount @49 :UInt32;
-    clockResets @50 :UInt32;
-  }
-
-  struct DrMeasurementReport @0x8053c39445c6c75c {
-
-    reason @0 :UInt8;
-    seqNum @1 :UInt8;
-    seqMax @2 :UInt8;
-    rfLoss @3 :UInt16;
-
-    systemRtcValid @4 :Bool;
-    fCount @5 :UInt32;
-    clockResets @6 :UInt32;
-    systemRtcTime @7 :UInt64;
-
-    gpsLeapSeconds @8 :UInt8;
-    gpsLeapSecondsUncertainty @9 :UInt8;
-    gpsToGlonassTimeBiasMilliseconds @10 :Float32;
-    gpsToGlonassTimeBiasMillisecondsUncertainty @11 :Float32;
-
-    gpsWeek @12 :UInt16;
-    gpsMilliseconds @13 :UInt32;
-    gpsTimeBiasMs @14 :UInt32;
-    gpsClockTimeUncertaintyMs @15 :UInt32;
-    gpsClockSource @16 :UInt8;
-
-    glonassClockSource @17 :UInt8;
-    glonassYear @18 :UInt8;
-    glonassDay @19 :UInt16;
-    glonassMilliseconds @20 :UInt32;
-    glonassTimeBias @21 :Float32;
-    glonassClockTimeUncertainty @22 :Float32;
-
-    clockFrequencyBias @23 :Float32;
-    clockFrequencyUncertainty @24 :Float32;
-    frequencySource @25 :UInt8;
-
-    source @26 :MeasurementSource;
-
-    sv @27 :List(SV);
-
-    struct SV @0xf08b81df8cbf459c {
-      svId @0 :UInt8;
-      glonassFrequencyIndex @1 :Int8;
-      observationState @2 :SVObservationState;
-      observations @3 :UInt8;
-      goodObservations @4 :UInt8;
-      filterStages @5 :UInt8;
-      predetectInterval @6 :UInt8;
-      cycleSlipCount @7 :UInt8;
-      postdetections @8 :UInt16;
-
-      measurementStatus @9 :MeasurementStatus;
-
-      carrierNoise @10 :UInt16;
-      rfLoss @11 :UInt16;
-      latency @12 :Int16;
-
-      filteredMeasurementFraction @13 :Float32;
-      filteredMeasurementIntegral @14 :UInt32;
-      filteredTimeUncertainty @15 :Float32;
-      filteredSpeed @16 :Float32;
-      filteredSpeedUncertainty @17 :Float32;
-
-      unfilteredMeasurementFraction @18 :Float32;
-      unfilteredMeasurementIntegral @19 :UInt32;
-      unfilteredTimeUncertainty @20 :Float32;
-      unfilteredSpeed @21 :Float32;
-      unfilteredSpeedUncertainty @22 :Float32;
-
-      multipathEstimate @23 :UInt32;
-      azimuth @24 :Float32;
-      elevation @25 :Float32;
-      dopplerAcceleration @26 :Float32;
-      fineSpeed @27 :Float32;
-      fineSpeedUncertainty @28 :Float32;
-
-      carrierPhase @29 :Float64;
-      fCount @30 :UInt32;
-
-      parityErrorCount @31 :UInt16;
-      goodParity @32 :Bool;
-    }
-  }
-
-  struct DrSvPolyReport @0xb1fb80811a673270 {
-    svId @0 :UInt16;
-    frequencyIndex @1 :Int8;
-
-    hasPosition @2 :Bool;
-    hasIono @3 :Bool;
-    hasTropo @4 :Bool;
-    hasElevation @5 :Bool;
-    polyFromXtra @6 :Bool;
-    hasSbasIono @7 :Bool;
-
-    iode @8 :UInt16;
-    t0 @9 :Float64;
-    xyz0 @10 :List(Float64);
-    xyzN @11 :List(Float64);
-    other @12 :List(Float32);
-
-    positionUncertainty @13 :Float32;
-    ionoDelay @14 :Float32;
-    ionoDot @15 :Float32;
-    sbasIonoDelay @16 :Float32;
-    sbasIonoDot @17 :Float32;
-    tropoDelay @18 :Float32;
-    elevation @19 :Float32;
-    elevationDot @20 :Float32;
-    elevationUncertainty @21 :Float32;
-    velocityCoeff @22 :List(Float64);
-  }
-}
-
 struct Clocks {
   bootTimeNanos @0 :UInt64;
   monotonicNanos @1 :UInt64;
@@ -1678,36 +1252,7 @@ struct Joystick {
   buttons @1: List(Bool);
 }
 
-struct DriverStateV2 {
-  frameId @0 :UInt32;
-  modelExecutionTime @1 :Float32;
-  dspExecutionTime @2 :Float32;
-  rawPredictions @3 :Data;
-
-  poorVisionProb @4 :Float32;
-  wheelOnRightProb @5 :Float32;
-
-  leftDriverData @6 :DriverData;
-  rightDriverData @7 :DriverData;
-
-  struct DriverData {
-    faceOrientation @0 :List(Float32);
-    faceOrientationStd @1 :List(Float32);
-    facePosition @2 :List(Float32);
-    facePositionStd @3 :List(Float32);
-    faceProb @4 :Float32;
-    leftEyeProb @5 :Float32;
-    rightEyeProb @6 :Float32;
-    leftBlinkProb @7 :Float32;
-    rightBlinkProb @8 :Float32;
-    sunglassesProb @9 :Float32;
-    occludedProb @10 :Float32;
-    readyProb @11 :List(Float32);
-    notReadyProb @12 :List(Float32);
-  }
-}
-
-struct DriverStateDEPRECATED @0xb83c6cc593ed0a00 {
+struct DriverState {
   frameId @0 :UInt32;
   modelExecutionTime @14 :Float32;
   dspExecutionTime @16 :Float32;
@@ -1731,9 +1276,6 @@ struct DriverStateDEPRECATED @0xb83c6cc593ed0a00 {
   phoneUse @22 :Float32;
   occludedProb @23 :Float32;
 
-  readyProb @24 :List(Float32);
-  notReadyProb @25 :List(Float32);
-
   irPwrDEPRECATED @10 :Float32;
   descriptorDEPRECATED @1 :List(Float32);
   stdDEPRECATED @2 :Float32;
@@ -1743,7 +1285,6 @@ struct DriverMonitoringState @0xb83cda094a1da284 {
   events @0 :List(Car.CarEvent);
   faceDetected @1 :Bool;
   isDistracted @2 :Bool;
-  distractedType @17 :UInt32;
   awarenessStatus @3 :Float32;
   posePitchOffset @6 :Float32;
   posePitchValidCount @7 :UInt32;
@@ -1755,8 +1296,8 @@ struct DriverMonitoringState @0xb83cda094a1da284 {
   isLowStd @13 :Bool;
   hiStdCount @14 :UInt32;
   isActiveMode @16 :Bool;
-  isRHD @4 :Bool;
 
+  isRHDDEPRECATED @4 :Bool;
   isPreviewDEPRECATED @15 :Bool;
   rhdCheckedDEPRECATED @5 :Bool;
 }
@@ -1818,29 +1359,6 @@ struct CameraOdometry {
   rotStd @3 :List(Float32); # std rad/s in device frame
 }
 
-struct LiveMapData {
-  speedLimitValid @0 :Bool;
-  speedLimit @1 :Float32;
-  speedLimitAheadValid @2 :Bool;
-  speedLimitAhead @3 :Float32;
-  speedLimitAheadDistance @4 :Float32;
-  turnSpeedLimitValid @5 :Bool;
-  turnSpeedLimit @6 :Float32;
-  turnSpeedLimitEndDistance @7 :Float32;
-  turnSpeedLimitSign @8 :Int16;
-  turnSpeedLimitsAhead @9 :List(Float32);
-  turnSpeedLimitsAheadDistances @10 :List(Float32);
-  turnSpeedLimitsAheadSigns @11 :List(Int16);
-  lastGpsTimestamp @12 :Int64;  # Milliseconds since January 1, 1970.
-  currentRoadName @13 :Text;
-  lastGpsLatitude @14 :Float64;
-  lastGpsLongitude @15 :Float64;
-  lastGpsSpeed @16 :Float32;
-  lastGpsBearingDeg @17 :Float32;
-  lastGpsAccuracy @18 :Float32;
-  lastGpsBearingAccuracyDeg @19 :Float32;
-}
-
 struct Sentinel {
   enum SentinelType {
     endOfSegment @0;
@@ -1890,9 +1408,6 @@ struct NavInstruction {
   lanes @8 :List(Lane);
   showFull @9 :Bool;
 
-  speedLimit @10 :Float32; # m/s
-  speedLimitSign @11 :SpeedLimitSign;
-
   struct Lane {
     directions @0 :List(Direction);
     active @1 :Bool;
@@ -1906,10 +1421,6 @@ struct NavInstruction {
     straight @3;
   }
 
-  enum SpeedLimitSign {
-    mutcd @0; # US Style
-    vienna @1; # EU Style
-    }
 }
 
 struct NavRoute {
@@ -1919,13 +1430,6 @@ struct NavRoute {
     latitude @0 :Float32;
     longitude @1 :Float32;
   }
-}
-
-struct EncodeData {
-  idx @0 :EncodeIndex;
-  data @1 :Data;
-  header @2 :Data;
-  unixTimestampNanos @3 :UInt64;
 }
 
 struct Event {
@@ -1957,10 +1461,8 @@ struct Event {
     lateralPlan @64 :LateralPlan;
     ubloxGnss @34 :UbloxGnss;
     ubloxRaw @39 :Data;
-    qcomGnss @31 :QcomGnss;
     gpsLocationExternal @48 :GpsLocationData;
-    gpsLocation @21 :GpsLocationData;
-    gnssMeasurements @91 :GnssMeasurements;
+    driverState @59 :DriverState;
     liveParameters @61 :LiveParametersData;
     cameraOdometry @63 :CameraOdometry;
     thumbnail @66: Thumbnail;
@@ -1969,7 +1471,6 @@ struct Event {
     driverMonitoringState @71: DriverMonitoringState;
     liveLocationKalman @72 :LiveLocationKalman;
     modelV2 @75 :ModelDataV2;
-    driverStateV2 @92 :DriverStateV2;
 
     # camera stuff, each camera state has a matching encode idx
     roadCameraState @2 :FrameData;
@@ -1978,7 +1479,6 @@ struct Event {
     roadEncodeIdx @15 :EncodeIndex;
     driverEncodeIdx @76 :EncodeIndex;
     wideRoadEncodeIdx @77 :EncodeIndex;
-    qRoadEncodeIdx @90 :EncodeIndex;
 
     # systems stuff
     androidLog @20 :AndroidLogEntry;
@@ -1997,13 +1497,6 @@ struct Event {
 
     # *********** debug ***********
     testJoystick @52 :Joystick;
-    roadEncodeData @86 :EncodeData;
-    driverEncodeData @87 :EncodeData;
-    wideRoadEncodeData @88 :EncodeData;
-    qRoadEncodeData @89 :EncodeData;
-
-    dragonConf @93 :Dp.DragonConf;
-    liveMapData @94: LiveMapData;
 
     # *********** legacy + deprecated ***********
     model @9 :Legacy.ModelData; # TODO: rename modelV2 and mark this as deprecated
@@ -2024,6 +1517,7 @@ struct Event {
     gpsPlannerPlanDEPRECATED @41 :Legacy.GPSPlannerPlan;
     applanixRawDEPRECATED @42 :Data;
     androidGnssDEPRECATED @30 :Legacy.AndroidGnss;
+    qcomGnssDEPRECATD @31 :Legacy.QcomGnss;
     lidarPtsDEPRECATED @32 :Legacy.LidarPts;
     navStatusDEPRECATED @38 :Legacy.NavStatus;
     trafficEventsDEPRECATED @43 :List(Legacy.TrafficEvent);
@@ -2039,8 +1533,8 @@ struct Event {
     orbFeaturesSummaryDEPRECATED @58 :Legacy.OrbFeaturesSummary;
     featuresDEPRECATED @10 :Legacy.CalibrationFeatures;
     kalmanOdometryDEPRECATED @65 :Legacy.KalmanOdometry;
+    gpsLocationDEPRECATED @21 :GpsLocationData;
     uiLayoutStateDEPRECATED @57 :Legacy.UiLayoutState;
     pandaStateDEPRECATED @12 :PandaState;
-    driverStateDEPRECATED @59 :DriverStateDEPRECATED;
   }
 }

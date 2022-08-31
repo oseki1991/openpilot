@@ -13,15 +13,14 @@ from common.basedir import BASEDIR
 from common.params import Params, ParamKeyType
 from common.text_window import TextWindow
 from selfdrive.boardd.set_time import set_time
-from system.hardware import HARDWARE, PC
+from selfdrive.hardware import HARDWARE, PC
 from selfdrive.manager.helpers import unblock_stdout
 from selfdrive.manager.process import ensure_running
 from selfdrive.manager.process_config import managed_processes
 from selfdrive.athena.registration import register, UNREGISTERED_DONGLE_ID
-from system.swaglog import cloudlog, add_file_handler
-from system.version import is_dirty, get_commit, get_version, get_origin, get_short_branch, \
-                              terms_version, training_version, is_tested_branch
-from common.dp_conf import init_params_vals
+from selfdrive.swaglog import cloudlog, add_file_handler
+from selfdrive.version import is_dirty, get_commit, get_version, get_origin, get_short_branch, \
+                              terms_version, training_version
 
 
 sys.path.append(os.path.join(BASEDIR, "pyextra"))
@@ -32,21 +31,15 @@ def manager_init() -> None:
   set_time(cloudlog)
 
   # save boot log
-  #subprocess.call("./bootlog", cwd=os.path.join(BASEDIR, "selfdrive/loggerd"))
+  subprocess.call("./bootlog", cwd=os.path.join(BASEDIR, "selfdrive/loggerd"))
 
   params = Params()
   params.clear_all(ParamKeyType.CLEAR_ON_MANAGER_START)
 
   default_params: List[Tuple[str, Union[str, bytes]]] = [
     ("CompletedTrainingVersion", "0"),
-    ("DisengageOnAccelerator", "1"),
     ("HasAcceptedTerms", "0"),
     ("OpenpilotEnabledToggle", "1"),
-    ("ShowDebugUI", "0"),
-    ("SpeedLimitControl", "0"),
-    ("SpeedLimitPercOffset", "0"),
-    ("TurnSpeedControl", "0"),
-    ("TurnVisionControl", "0"),
   ]
   if not PC:
     default_params.append(("LastUpdateTime", datetime.datetime.utcnow().isoformat().encode('utf8')))
@@ -61,9 +54,6 @@ def manager_init() -> None:
   for k, v in default_params:
     if params.get(k) is None:
       params.put(k, v)
-
-  # dp init params
-  init_params_vals(params)
 
   # is this dashcam?
   if os.getenv("PASSIVE") is not None:
@@ -87,7 +77,6 @@ def manager_init() -> None:
   params.put("GitCommit", get_commit(default=""))
   params.put("GitBranch", get_short_branch(default=""))
   params.put("GitRemote", get_origin(default=""))
-  params.put_bool("IsTestedBranch", is_tested_branch())
 
   # set dongle id
   reg_res = register(show_spinner=True)
@@ -132,30 +121,32 @@ def manager_thread() -> None:
   params = Params()
 
   ignore: List[str] = []
-
-  # dp
-  dp_otisserv = params.get_bool('dp_otisserv')
-  ignore += ['dmonitoringmodeld', 'dmonitoringd'] if params.get_bool('dp_jetson') else []
-  ignore += ['otisserv'] if not dp_otisserv else []
-  ignore += ['gpxd'] if not dp_otisserv and not params.get_bool('dp_gpxd') else []
-  ignore += ['uploader'] if not params.get_bool('dp_api_custom') and (int(params.get('dp_atl', encoding='utf8')) > 0 or params.get_bool('dp_jetson')) else []
-
   if params.get("DongleId", encoding='utf8') in (None, UNREGISTERED_DONGLE_ID):
     ignore += ["manage_athenad", "uploader"]
   if os.getenv("NOBOARD") is not None:
     ignore.append("pandad")
   ignore += [x for x in os.getenv("BLOCK", "").split(",") if len(x) > 0]
 
-  sm = messaging.SubMaster(['deviceState', 'carParams'], poll=['deviceState'])
-  pm = messaging.PubMaster(['managerState'])
+  ensure_running(managed_processes.values(), started=False, not_run=ignore)
 
-  ensure_running(managed_processes.values(), False, params=params, CP=sm['carParams'], not_run=ignore)
+  started_prev = False
+  sm = messaging.SubMaster(['deviceState'])
+  pm = messaging.PubMaster(['managerState'])
 
   while True:
     sm.update()
+    not_run = ignore[:]
 
     started = sm['deviceState'].started
-    ensure_running(managed_processes.values(), started, params=params, CP=sm['carParams'], not_run=ignore)
+    driverview = params.get_bool("IsDriverViewEnabled")
+    ensure_running(managed_processes.values(), started, driverview, not_run)
+
+    # trigger an update after going offroad
+    if started_prev and not started and 'updated' in managed_processes:
+      os.sync()
+      managed_processes['updated'].signal(signal.SIGHUP)
+
+    started_prev = started
 
     running = ' '.join("%s%s\u001b[0m" % ("\u001b[32m" if p.proc.is_alive() else "\u001b[31m", p.name)
                        for p in managed_processes.values() if p.proc)
