@@ -971,5 +971,4 @@ EVENTS: Dict[int, Dict[str, Union[Alert, AlertCallbackType]]] = {
       Priority.MID, VisualAlert.none,
       AudibleAlert.disengage, .2),
   },
-
 }
