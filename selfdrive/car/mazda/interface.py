@@ -24,7 +24,7 @@ class CarInterface(CarInterfaceBase):
     ret.lateralTuning.init('pid')
     ret.radarOffCan = True
 
-    ret.dashcamOnly = candidate not in (CAR.CX5_2022, CAR.CX9_2021)
+    ret.dashcamOnly = False
 
     ret.steerActuatorDelay = 0.1
     ret.steerRateCost = 1.0
