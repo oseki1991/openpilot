@@ -280,6 +280,8 @@ class CarInterfaceBase(ABC):
       if ret.seatbeltUnlatched or ret.doorOpen:
         enable = False
         available = False
+      if ret.leftBlinker or ret.rightBlinker:  # 方向燈狀態 ok
+        enable = False
     return enable, available
 
 
