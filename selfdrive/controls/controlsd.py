@@ -168,7 +168,8 @@ class Controls:
     #  self.LaC = LatControlAngle(self.CP, self.CI)
     #elif self.CP.lateralTuning.which() == 'pid':
      self.LaC = LatControlPID(self.CP, self.CI)
-    else self.LaC = LatControlPID(self.CP, self.CI)
+    else: 
+     self.LaC = LatControlPID(self.CP, self.CI)
     #elif self.CP.lateralTuning.which() == 'indi':
     #  self.LaC = LatControlINDI(self.CP, self.CI)
     #elif self.CP.lateralTuning.which() == 'torque':
