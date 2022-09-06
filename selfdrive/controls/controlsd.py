@@ -162,16 +162,16 @@ class Controls:
     self.VM = VehicleModel(self.CP)
 
     self.LaC: LatControl
-    if params.get_bool("dp_lateral_lqr"):
-      self.LaC = LatControlLQR(self.CP, self.CI)
-    elif self.CP.steerControlType == car.CarParams.SteerControlType.angle:
-      self.LaC = LatControlAngle(self.CP, self.CI)
-    elif self.CP.lateralTuning.which() == 'pid':
-      self.LaC = LatControlPID(self.CP, self.CI)
-    elif self.CP.lateralTuning.which() == 'indi':
-      self.LaC = LatControlINDI(self.CP, self.CI)
-    elif self.CP.lateralTuning.which() == 'torque':
-      self.LaC = LatControlTorque(self.CP, self.CI)
+    #if params.get_bool("dp_lateral_lqr"):
+    #  self.LaC = LatControlLQR(self.CP, self.CI)
+    #elif self.CP.steerControlType == car.CarParams.SteerControlType.angle:
+    #  self.LaC = LatControlAngle(self.CP, self.CI)
+    #elif self.CP.lateralTuning.which() == 'pid':
+     self.LaC = LatControlPID(self.CP, self.CI)
+    #elif self.CP.lateralTuning.which() == 'indi':
+    #  self.LaC = LatControlINDI(self.CP, self.CI)
+    #elif self.CP.lateralTuning.which() == 'torque':
+    #  self.LaC = LatControlTorque(self.CP, self.CI)
 
     self.initialized = False
     self.state = State.disabled
