@@ -34,6 +34,9 @@ class CarInterface(CarInterfaceBase):
       ret.mass = 3655 * CV.LB_TO_KG + STD_CARGO_KG
       ret.wheelbase = 2.7
       ret.steerRatio = 15.5
+      ret.lateralTuning.pid.kiBP, ret.lateralTuning.pid.kpBP = [[0.], [0.]]
+      ret.lateralTuning.pid.kpV, ret.lateralTuning.pid.kiV = [[0.19], [0.019]]
+      ret.lateralTuning.pid.kf = 0.00006
     elif candidate in (CAR.CX9, CAR.CX9_2021):
       ret.mass = 4217 * CV.LB_TO_KG + STD_CARGO_KG
       ret.wheelbase = 3.1
